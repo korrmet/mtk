@@ -114,6 +114,16 @@ class label : public widget
         int x1 = 0, int y1 = 0, int x2 = 0, int y2 = 0);
   virtual void event(event::base* ev) override; };
 
+class sprite : public widget
+{ public:
+  sprite(image* img = nullptr,
+         int x1 = 0, int y1 = 0, int x2 = 0, int y2 = 0);
+  sprite& set_image(image* img);
+  virtual void event(event::base* ev) override;
+
+  private:
+  image* img; };
+
 class button : public widget
 { public:
   button(const char* text = nullptr,

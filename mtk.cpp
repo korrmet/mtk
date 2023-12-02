@@ -444,6 +444,22 @@ void mtk::label::event(mtk::event::base* ev)
 
     default: break; } }
 
+mtk::sprite::sprite(mtk::image* img, int x1, int y1, int x2, int y2)
+: mtk::widget(nullptr, x1, y1, x2, y2), img(img) { }
+
+mtk::sprite& mtk::sprite::set_image(mtk::image* img)
+{ this->img = img; return *this; }
+
+void mtk::sprite::event(mtk::event::base* ev)
+{ switch (ev->t)
+  { case mtk::event::base::type::draw:
+    { mtk::event::draw* dev = (mtk::event::draw*)ev;
+      mtk::draw drawer(*dev->area);
+      drawer.sprite(*img, 0, 0);
+    } break;
+
+    default: break; } }
+
 mtk::button::button(const char* text, void* arg, void (*callback)(void*),
                     int x1, int y1, int x2, int y2)
 : mtk::widget(text, x1, y1, x2, y2), callback(callback), arg(arg)
@@ -614,61 +630,25 @@ mtk::widget* mtk::core::find_nearest(mtk::widget* tw,
   int rating = std::numeric_limits<int>::max();
   widget* iter = s->w;
   while (iter)
-  { int x1 = 0;
-    int y1 = 0;
-    int x2 = 0;
-    int y2 = 0;
+  { if (iter == tw) { iter = iter->next; continue; }
+    int x1 = 0; int y1 = 0; int x2 = 0; int y2 = 0;
 
     switch (target)
-    { case corner::top_left:
-      { x1 = tw->x1;
-        y1 = tw->y1;
-      } break;
-      
-      case corner::top_right:
-      { x1 = tw->x2;
-        y1 = tw->y1;
-      } break;
-      
-      case corner::bottom_left:
-      { x1 = tw->x1;
-        y1 = tw->y2;
-      } break;
-      
-      case corner::bottom_right:
-      { x1 = tw->x2;
-        y2 = tw->y2;
-      } break;
-      
+    { case corner::top_left:     { x1 = tw->x1; y1 = tw->y1; } break;
+      case corner::top_right:    { x1 = tw->x2; y1 = tw->y1; } break;
+      case corner::bottom_left:  { x1 = tw->x1; y1 = tw->y2; } break;
+      case corner::bottom_right: { x1 = tw->x2; y2 = tw->y2; } break;
       default: break; }
 
     switch (candidate)
-    { case corner::top_left:
-      { x2 = iter->x1;
-        y2 = iter->y1;
-      } break;
-
-      case corner::top_right:
-      { x2 = iter->x2;
-        y2 = iter->y1;
-      } break;
-
-      case corner::bottom_left:
-      { x2 = iter->x1;
-        y2 = iter->y2;
-      } break;
-
-      case corner::bottom_right:
-      { x2 = iter->x2;
-        y2 = iter->y2;
-      } break;
-
+    { case corner::top_left:     { x2 = iter->x1; y2 = iter->y1; } break;
+      case corner::top_right:    { x2 = iter->x2; y2 = iter->y1; } break;
+      case corner::bottom_left:  { x2 = iter->x1; y2 = iter->y2; } break;
+      case corner::bottom_right: { x2 = iter->x2; y2 = iter->y2; } break;
       default: break; }
 
     int current_rating = distance_rating(x1, y1, x2, y2);
-    if (current_rating < rating)
-    { nearest = iter;
-      rating = current_rating; }
+    if (current_rating < rating) { nearest = iter; rating = current_rating; }
     
     iter = iter->next; }
 

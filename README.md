@@ -1,4 +1,8 @@
+![plot](./logo.png)
+
 # MTK - Monochrome Tool Kit
+
+![plot](./example.png)
 
 Simple high-level toolkit to rapidly create user interfaces on monochrome
 displays written in C++.
