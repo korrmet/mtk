@@ -494,7 +494,7 @@ void mtk::button::event(mtk::event::base* ev)
 
 static int distance_rating(int x1, int y1, int x2, int y2)
 { int w = x1 > x2 ? x1 - x2 : x2 - x1;
-  int h = y1 > y2 ? y1 - y1 : y2 - y1;
+  int h = y1 > y2 ? y1 - y2 : y2 - y1;
   return w + h; }
 
 mtk::core::core(mtk::display& d) : s(nullptr), d(d) { }
@@ -505,92 +505,45 @@ mtk::core& mtk::core::show(mtk::screen* scr)
   drawer.clear()
         .rect(0, 0, d.get_info().w, 9)
         .print(scr->title, 1, 1, true);
-
+  s = scr;
+  if (!focused()) { focus_first(); }
   widget* w = scr->w; while (w) { draw_widget(w); w = w->next; }
   drawer.refresh();
-  s = scr;
   return *this; }
 
 mtk::core& mtk::core::click(mtk::core::sysclick code)
 { if (!s) { return *this; }
 
-  switch (code)
-  { case sysclick::ok:
-    { widget* focus = focused();
-      if (!focus) { break; }
-      mtk::event::trigger ev;
-      focus->event(&ev);
-    } break;
+  if (code == sysclick::ok)
+  { widget* focus = focused();
+    if (!focus) { return *this; }
+    mtk::event::trigger ev;
+    focus->event(&ev); }
+  else if (code == sysclick::up   || code == sysclick::down ||
+           code == sysclick::left || code == sysclick::right)
+  { if (!s->w) { return *this; }
 
-    case sysclick::up:
-    { if (!s->w) { break; }
+     widget* focus = focused();
+     if (!focus) { draw_widget(focus_first()); return *this; }
 
-      widget* focus = focused();
-      if (!focus) { draw_widget(focus_first()); break; }
+     direction dir = direction::up;
+     switch (code)
+     { case sysclick::up:    dir = direction::up;    break;
+       case sysclick::down:  dir = direction::down;  break;
+       case sysclick::left:  dir = direction::left;  break;
+       case sysclick::right: dir = direction::right; break;
+       default: return *this; }
 
-      widget* target = find_nearest(focus, corner::top_left,
-                                           corner::bottom_left);
+     widget* target = find_nearest(focus, dir);
 
-      if (!target) { break; }
+     if (!target) { return *this; }
 
-      target->focused = true;
-      focus->focused = false;
+     target->focused = true;
+     focus->focused = false;
 
-      draw_widget(target);
-      draw_widget(focus);
-    } break;
-
-    case sysclick::down:
-    { if (!s->w) { break; }
-
-      widget* focus = focused();
-      if (!focus) { draw_widget(focus_first()); break; }
-
-      widget* target = find_nearest(focus, corner::bottom_left,
-                                           corner::top_left);
-
-      if (!target) { break; }
-
-      target->focused = true;
-      focus->focused = false;
-
-      draw_widget(target);
-      draw_widget(focus);
-    } break;
-
-    case sysclick::left:
-    { if (!s->w) { break; }
-
-      widget* focus = focused();
-      if (!focus) { draw_widget(focus_first()); break; }
-
-      widget* target = find_nearest(focus, corner::top_left, corner::top_right);
-      if (!target) { break; }
-
-      target->focused = true;
-      focus->focused = false;
-
-      draw_widget(target);
-      draw_widget(focus);
-    } break;
-
-    case sysclick::right:
-    { if (!s->w) { break; }
-
-      widget* focus = focused();
-      if (!focus) { draw_widget(focus_first()); break; }
-
-      widget* target = find_nearest(focus, corner::top_right, corner::top_left);
-      if (!target) { break; }
-
-      target->focused = true;
-      focus->focused = false;
-
-      draw_widget(target);
-      draw_widget(focus);
-    } break;
-
-    default: break; }
+     draw_widget(target);
+     draw_widget(focus);
+  }
 
   return *this; }
 
@@ -621,35 +574,30 @@ void mtk::core::draw_widget(mtk::widget* w)
   w->event(&ev);
   d.refresh(); }
 
-mtk::widget* mtk::core::find_nearest(mtk::widget* tw,
-                                     mtk::core::corner target,
-                                     mtk::core::corner candidate)
+mtk::widget* mtk::core::find_nearest(mtk::widget* tw, mtk::core::direction dir)
 { if (!tw || !s || !s->w) { return nullptr; }
 
   widget* nearest = nullptr;
+
   int rating = std::numeric_limits<int>::max();
   widget* iter = s->w;
+  int tx = (tw->x1 + tw->x2) / 2; int ty = (tw->y1 + tw->y2) / 2;
+
   while (iter)
   { if (iter == tw) { iter = iter->next; continue; }
-    int x1 = 0; int y1 = 0; int x2 = 0; int y2 = 0;
+    if (!iter->accept_focus) { iter = iter->next; continue; }
 
-    switch (target)
-    { case corner::top_left:     { x1 = tw->x1; y1 = tw->y1; } break;
-      case corner::top_right:    { x1 = tw->x2; y1 = tw->y1; } break;
-      case corner::bottom_left:  { x1 = tw->x1; y1 = tw->y2; } break;
-      case corner::bottom_right: { x1 = tw->x2; y2 = tw->y2; } break;
-      default: break; }
+    int cx = (iter->x1 + iter->x2) / 2; int cy = (iter->y1 + iter->y2) / 2;
 
-    switch (candidate)
-    { case corner::top_left:     { x2 = iter->x1; y2 = iter->y1; } break;
-      case corner::top_right:    { x2 = iter->x2; y2 = iter->y1; } break;
-      case corner::bottom_left:  { x2 = iter->x1; y2 = iter->y2; } break;
-      case corner::bottom_right: { x2 = iter->x2; y2 = iter->y2; } break;
-      default: break; }
+    if (dir == direction::up    && cy >= ty) { iter = iter->next; continue; }
+    if (dir == direction::down  && cy <= ty) { iter = iter->next; continue; }
+    if (dir == direction::left  && cx >= tx) { iter = iter->next; continue; }
+    if (dir == direction::right && cx <= tx) { iter = iter->next; continue; }
 
-    int current_rating = distance_rating(x1, y1, x2, y2);
+    int current_rating = distance_rating(cx, cy, tx, ty);
+
     if (current_rating < rating) { nearest = iter; rating = current_rating; }
-    
+
     iter = iter->next; }
 
   return nearest; }

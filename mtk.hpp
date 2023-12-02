@@ -148,8 +148,8 @@ class core
   mtk::widget* focused();
   mtk::widget* focus_first();
   void draw_widget(mtk::widget* w);
-  enum class corner { top_left, top_right, bottom_left, bottom_right };
-  mtk::widget* find_nearest(mtk::widget* tw, corner target, corner candidate);
+  enum class direction { up, down, left, right };
+  mtk::widget* find_nearest(mtk::widget* tw, direction dir);
   screen* s;
   display& d; };
 }
