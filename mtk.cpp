@@ -503,7 +503,7 @@ mtk::core& mtk::core::show(mtk::screen* scr)
 { if (!scr) { return *this; }
   draw drawer(d);
   drawer.clear()
-        .rect(0, 0, d.get_info().w, 9)
+        .rect(0, 0, d.get_info().w, 8)
         .print(scr->title, 1, 1, true);
   s = scr;
   if (!focused()) { focus_first(); }

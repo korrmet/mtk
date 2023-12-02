@@ -18,7 +18,7 @@ class app
   class labels_screen : public mtk::screen
   { public:
     labels_screen(struct mtk::display::info dinfo, app* application)
-    : mtk::screen("labels example")
+    : mtk::screen("Labels (example) [# 1/3]")
     { label_0.label_text("sample label 1").geometry( 0,  0,  60,  8);
       label_1.label_text("sample label 2").geometry( 0,  8,  60, 16);
       label_2.label_text("sample label 3").geometry(60,  0, 120,  8);
@@ -41,7 +41,7 @@ class app
   class buttons_screen : public mtk::screen
   { public:
     buttons_screen(struct mtk::display::info dinfo, app* application)
-    : mtk::screen("buttons example")
+    : mtk::screen("Buttons (example) [# 2/3]")
     { next_button.set_callback(application, next_handler)
                  .label_text("next")
                  .geometry(dinfo.w - 40, dinfo.h - 11, dinfo.w, dinfo.h);
@@ -72,7 +72,7 @@ class app
   class images_screen : public mtk::screen
   { public:
     images_screen(struct mtk::display::info dinfo, app* application)
-    : mtk::screen("images example")
+    : mtk::screen("Images (example) [# 3/3]")
     { first_button.set_callback(application, first_handler)
                   .label_text("first")
                   .geometry(dinfo.w - 40, dinfo.h - 11, dinfo.w, dinfo.h);
