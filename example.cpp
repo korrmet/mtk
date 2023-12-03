@@ -19,9 +19,9 @@ class app
   { public:
     labels_screen(struct mtk::display::info dinfo, app* application)
     : mtk::screen("Labels (example) [# 1/3]")
-    { label_0.label_text("sample label 1").geometry( 0,  0,  60,  8);
-      label_1.label_text("sample label 2").geometry( 0,  8,  60, 16);
-      label_2.label_text("sample label 3").geometry(60,  0, 120,  8);
+    { label_0.label_text("{[label] (1)}").geometry( 0,  0,  60,  8);
+      label_1.label_text("{[label] (2)}").geometry( 0,  8,  60, 16);
+      label_2.label_text("{[label] (3)}").geometry(60,  0, 120,  8);
 
       next_button.set_callback(application, next_handler)
                  .label_text("next")
